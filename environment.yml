@@ -1,0 +1,12 @@
+name: real-estate
+
+dependencies:
+  - python=3.7
+  - scikit-learn
+  - pip:
+    - PyInquirer
+    - bs4
+    - xgboost
+    - mysql.connector
+    - flask
+  
