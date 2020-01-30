@@ -8,6 +8,7 @@ class Model:
     """ Import your json with new inputs, return a prediction by Ia"""
 
     def make_prediction(self, input_data):
+        print(input_data)
         x = pd.DataFrame()
         x.loc[0, "type_de_bien"] = input_data['type_de_bien']
         x.loc[0, "nb_de_pieces"] = input_data['nb_de_pieces']
@@ -21,7 +22,8 @@ class Model:
         pred = model.predict(x)
         pred = np.exp(pred)
 
-        return pred
+        print(pred)
+        return pred.tolist()
 
 
 # input_data = {

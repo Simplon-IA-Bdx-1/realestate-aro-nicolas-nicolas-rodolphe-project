@@ -6,7 +6,7 @@ def sanitize_data(data):
     for key in data.keys():
         data[key] = data[key].strip()
 
-    data['type'] = data['type'].lower()
+    data['type_de_bien'] = data['type_de_bien'].lower()
     data['ville'] = data['ville'].upper()
 
     return data

@@ -6,7 +6,7 @@ class Cli:
         questions = [
             {
                 'type': 'list',
-                'name': 'type',
+                'name': 'type_de_bien',
                 'message': 'Quel est le type de bien sur \
                             lequel lancer une prédiction?',
                 'choices': [
@@ -16,7 +16,7 @@ class Cli:
             },
             {
                 'type': 'input',
-                'name': 'rooms',
+                'name': 'nb_de_pieces',
                 'message': 'Quel est le nombre de pièces?'
             },
             {

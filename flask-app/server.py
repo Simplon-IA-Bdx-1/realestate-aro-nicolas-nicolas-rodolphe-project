@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from production_ia import Model
 
 
 app = Flask(__name__)
@@ -16,7 +17,9 @@ def index():
 @app.route('/', methods=['POST'])
 def post_route():
     data = request.get_json(force=True)
-    return data
+    model = Model()
+    prediction = model.make_prediction(data)
+    return jsonify({"prediction": prediction[0]})
 
 
 if __name__ == "__main__":
