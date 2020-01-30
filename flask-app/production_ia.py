@@ -1,34 +1,33 @@
-import pandas as pd
 import numpy as np
-
-import warnings
-warnings.filterwarnings("ignore") 
-
+import pandas as pd
 from joblib import load
-import xgboost
+import os
 
-class iaForHouseFast() :
+
+class Model:
     """ Import your json with new inputs, return a prediction by Ia"""
 
-    @staticmethod
-    def prediction():
-
+    def make_prediction(self, input_data):
         x = pd.DataFrame()
-        x.loc[0,"type_de_bien"] = "maison"
-        x.loc[0,"nb_de_pieces"] = 5
-        x.loc[0,"surface"] = 100
-        x.loc[0,"ville"] = "PORT STE FOY ET PONCHAPT"
+        x.loc[0, "type_de_bien"] = input_data['type_de_bien']
+        x.loc[0, "nb_de_pieces"] = input_data['nb_de_pieces']
+        x.loc[0, "surface"] = input_data['surface']
+        x.loc[0, "ville"] = input_data['ville']
 
-        model = load('model_xgb_v2.joblib')
+        model = load(
+            os.path.abspath('flask-app/model_xgb_v2.joblib')
+            )
 
         pred = model.predict(x)
-
         pred = np.exp(pred)
 
-        print(f"Prediction = {pred}")
-        
-        return pred  
+        return pred
 
 
-iaForHouseFast.prediction()        
-
+# input_data = {
+#     'type_de_bien': 'maison',
+#     'nb_de_pieces': '2',
+#     'surface': '20',
+#     'ville': 'ARCACHON'}
+# model = Model()
+# model.make_prediction(input_data)
