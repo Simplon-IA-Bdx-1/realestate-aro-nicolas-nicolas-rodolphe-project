@@ -137,7 +137,8 @@ dmypy.json
 .pyre/
 
 ### VisualStudioCode ###
-.vscode/*
+.vscode/
+
 
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
@@ -170,6 +171,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/git,python,windows,jupyternotebooks,visualstudiocode
+<<<<<<< HEAD
 
 
 ideas.md
+=======
+>>>>>>> develop

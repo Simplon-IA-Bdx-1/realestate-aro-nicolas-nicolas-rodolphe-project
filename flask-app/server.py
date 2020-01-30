@@ -1,29 +1,26 @@
-"""Filename: server.py
-"""
-
-# import os
-# import pandas as pd
-# import joblib
 from flask import Flask, jsonify, request
+from production_ia import Model
+
 
 app = Flask(__name__)
 
 
-# define a predict function as an endpoint
-@app.route("/predict", methods=["GET", "POST"])
-def predict():
-    data = {"success": False}
-    # get the request parameters
-    params = request.json
-    if params is None:
-        params = request.args
-    # if parameters are found, echo the msg parameter
-    if params is not None:
-        data["response"] = params.get("msg")
-        data["success"] = True
-    # return a response in json format
-    return jsonify(data)
+@app.route('/')
+def index():
+    user_agent = request.headers['user-agent']
+    if 'python' in user_agent:
+        return jsonify({'message': 'hello python'})
+    else:
+        return jsonify({'message': 'Yo web, what\'s up?'})
 
 
-# start the flask app, allow remote connections
-app.run(host='0.0.0.0')
+@app.route('/', methods=['POST'])
+def post_route():
+    data = request.get_json(force=True)
+    model = Model()
+    prediction = model.make_prediction(data)
+    return jsonify({"prediction": prediction[0]})
+
+
+if __name__ == "__main__":
+    app.run()
