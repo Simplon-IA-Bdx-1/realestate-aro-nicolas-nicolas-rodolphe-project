@@ -1,6 +1,6 @@
 import requests
 import json
-from cli import Cli
+from Cli.cli import Cli
 
 
 def sanitize_data(data):

@@ -9,8 +9,9 @@ def index():
     user_agent = request.headers['user-agent']
     if 'python' in user_agent:
         return jsonify({'message': 'hello python'})
-    if 'Mozilla' in user_agent:
+    else:
         return jsonify({'message': 'Yo web, what\'s up?'})
+
 
 @app.route('/', methods=['POST'])
 def post_route():
