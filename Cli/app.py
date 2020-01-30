@@ -17,6 +17,6 @@ def sanitize_data(data):
 
 # data = sanitize_data(cli.prompt())
 
-r = requests.get('http://127.0.0.1:5000/')
+r = requests.post('http://127.0.0.1:5000/', json={"key": "value"})
 
 print(r.text)

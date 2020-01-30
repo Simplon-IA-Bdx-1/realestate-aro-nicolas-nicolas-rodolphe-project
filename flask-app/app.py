@@ -12,5 +12,11 @@ def index():
     if 'Mozilla' in user_agent:
         return jsonify({'message': 'Yo web, what\'s up?'})
 
+@app.route('/', methods=['POST'])
+def post_route():
+    data = request.get_json(force=True)
+    return data
+
+
 if __name__ == "__main__":
     app.run()
