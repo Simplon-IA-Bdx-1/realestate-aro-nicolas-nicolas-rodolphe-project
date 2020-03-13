@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How much baby?</title>
+    <link rel="shortcut icon" href={{url_for('static', filename='favicon-32x32.png')}} type="image/x-icon">
+    <link rel="stylesheet" href={{url_for('static', filename='reset.css')}}>
+    <link rel="stylesheet" href={{url_for('static', filename='styles.css')}}>
+</head>
+<body>
+    <header class="header">
+        <h1>
+            ril éstayte
+            <span class="main-title">Vendez votre bien au bon prix ;)</span>
+        </h1>
+    </header>
+    <main>
+        <div id="left">
+            <h2 id="form-title">Entrez les données du bien à évaluer</h2>
+            <form action="/predict" method="post">
+                <ul class="predict">
+                    <li class="predict-li">
+                        <label for="property-select">Type de bien</label>
+                        <select class="input" name="properties" id="property-select">
+                            <option disabled selected value="">-- choisir un bien --</option>
+                            <option value="maison">maison</option>
+                            <option value="appartement">appartement</option>
+                        </select>
+                    </li>
+                    <li class="predict-li">
+                        <label for="surface">Surface habitable (m2)</label>
+                        <input class ="input" type="number" name="surface" id="surface">
+                    </li>
+                    <li class="predict-li">
+                        <label for="rooms">Nombre de pièces</label>
+                        <input class="input" type="number" name="rooms" id="rooms">
+                    </li>
+                    <li class="predict-li">
+                        <label for="city">Ville</label>
+                        <input class="input" type="text" name="city" id="city">
+                    </li>
+                    <li id="button">
+                        <input type="submit" value="évaluer">
+                    </li>
+                </ul>
+            </form>
+        </div>
+        <div id="right">
+            {{price}}
+        </div>
+    </main>
+    <footer>
+        ARNN - 2020
+    </footer>
+</body>
+</html>
