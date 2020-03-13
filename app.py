@@ -5,11 +5,9 @@ import pandas as pd
 import webbrowser
 from threading import Timer
 
-
 webbrowser.open_new('http://127.0.0.1:5000')
 
 app = Flask(__name__)
-
 
 @app.route('/')
 def hello_world():
@@ -22,15 +20,8 @@ def get_predict():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-#    input_data = [[
-#        request.form['type_de_bien'],
-#        request.form['annee'],
-#        request.form['nb_de_pieces'],
-#        request.form['surface'],
-#        request.form['ville']
-#    ]]
 
-    nput_data = {"type_de_bien":[request.form['type_de_bien']],
+    input_data = {"type_de_bien":[request.form['type_de_bien']],
         "année":[request.form['annee']],
         "nb_de_pieces":[request.form['nb_de_pieces']],
         "surface":[request.form['surface']],
@@ -42,15 +33,6 @@ def predict():
     output = model.predict(input_data)
 
     return render_template('predict.html', classe = output)
-
-
-#def open_browser():
-#      webbrowser.open_new('http://127.0.0.1:5000')
-
-#if __name__ == "__main__":
-#      Timer(1, open_browser).start();
-#      app.run(debug=True)
-
 
 if __name__ == '__main__':
     app.run(debug=False)
