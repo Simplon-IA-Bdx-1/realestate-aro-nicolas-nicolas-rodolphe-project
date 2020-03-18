@@ -22,7 +22,7 @@ Create a conda env with this command: `conda env create -f environment.yml` at t
 
 - Create an [environment](https://virtualenv.pypa.io/en/stable/) at the root of the repo: `python3 venv venv/`
 - Acivate it `source venv/bin/activate`
-- You can now install the dependencies with the `pip install -r requirement.txt` command.
+- You can now install the dependencies with the `pip install -r requirements.txt` command.
 
 ### The app
 
