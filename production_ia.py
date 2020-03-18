@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from joblib import load
-import os
 
 
 class Model:
@@ -15,9 +14,7 @@ class Model:
         x.loc[0, "surface"] = input_data['surface']
         x.loc[0, "ville"] = input_data['ville']
 
-        model = load(
-            os.path.abspath('Models/model_xgb_v2.joblib')
-            )
+        model = load('Models/model_xgb_v2.joblib')
 
         pred = model.predict(x)
         pred = np.exp(pred)
