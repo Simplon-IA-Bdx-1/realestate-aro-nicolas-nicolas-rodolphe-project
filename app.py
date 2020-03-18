@@ -1,5 +1,10 @@
 import requests
 from Cli.cli import Cli
+from production_ia import Model
+import locale
+
+locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
+locale._override_localeconv = {'mon_thousands_sep': ' '}
 
 
 def sanitize_data(data):
@@ -13,9 +18,12 @@ def sanitize_data(data):
 
 
 cli = Cli()
+model = Model()
 
 data = sanitize_data(cli.prompt())
+prediction = (model.make_prediction(data))
+fr_price = locale.format_string('%.2f', prediction, grouping=True, monetary= True)
 
-r = requests.post('http://127.0.0.1:5000/', json=data)
 
-print(r.text)
+
+print(f'Votre bien est estimé à : {fr_price}€')
