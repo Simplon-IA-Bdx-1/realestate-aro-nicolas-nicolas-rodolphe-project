@@ -16,7 +16,7 @@ Clone this repo and access it from the command line: `git clone https://github.c
 #### Anaconda
 
 If you want, you can install [conda](https://docs.conda.io/en/latest/miniconda.html) to manage environments on your machine.  
-Create a conda env with this command: `conda create -f environment.yml` at the root of the repo.
+Create a conda env with this command: `conda env create -f environment.yml` at the root of the repo.
 
 #### Virtual env
 
