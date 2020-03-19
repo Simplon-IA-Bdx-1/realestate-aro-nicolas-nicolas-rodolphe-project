@@ -1,10 +1,7 @@
 ## PRE-REQUIS
 
-- Installer la derniere version de "Microsoft Visual C++ Redistributable for Visual Studio" x64
-(https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) 
-
-- Installer "MySQL WorkBench"
-(https://dev.mysql.com/downloads/workbench/)
+- Allez à l'addresse suivante afin d'utiliser "phpmyadmin"
+(https://remotemysql.com/phpmyadmin/sql.php?server=1&db=orR9HUwT41&table=maison_appartement&pos=0)
 
 ## SE CONNECTER A LA DATABASE MYSQL :
 
