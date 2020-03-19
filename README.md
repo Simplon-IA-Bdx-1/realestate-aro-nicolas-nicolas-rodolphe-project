@@ -16,13 +16,13 @@ Clone this repo and access it from the command line: `git clone https://github.c
 #### Anaconda
 
 If you want, you can install [conda](https://docs.conda.io/en/latest/miniconda.html) to manage environments on your machine.  
-Create a conda env with this command: `conda env create -f environment.yml` at the root of the repo.
+Create a conda env with this command: `conda env create -f ./env/environment.yml` at the root of the repo.
 
 #### Virtual env
 
 - Create an [environment](https://virtualenv.pypa.io/en/stable/) at the root of the repo: `python3 venv venv/`
 - Acivate it `source venv/bin/activate`
-- You can now install the dependencies with the `pip install -r requirements.txt` command.
+- You can now install the dependencies with the `pip install -r ./env/requirements.txt` command.
 
 ### The app
 
