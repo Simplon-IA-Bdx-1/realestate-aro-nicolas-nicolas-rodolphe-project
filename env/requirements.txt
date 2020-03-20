@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 adal==1.2.2
 applicationinsights==0.11.9
 asn1crypto==1.3.0
@@ -48,6 +49,11 @@ itsdangerous==1.1.0
 jeepney==0.4.3
 Jinja2==2.11.0
 jmespath==0.9.5
+=======
+scikit-learn==0.22.1
+xgboost==0.90
+pyinquirer==1.0.3
+>>>>>>> c830a34621bf7bdb1ccdf12c2b4cbe0fdb3bab34
 joblib==0.14.1
 jsonpickle==1.3
 MarkupSafe==1.1.1
@@ -62,6 +68,7 @@ msrestazure==0.6.3
 mysql-connector==2.2.9
 ndg-httpsclient==0.5.1
 numpy==1.18.1
+<<<<<<< HEAD
 oauthlib==3.1.0
 pandas==1.0.0
 pathspec==0.7.0
@@ -93,3 +100,9 @@ wcwidth==0.1.8
 websocket-client==0.57.0
 Werkzeug==0.16.1
 xgboost==0.90
+=======
+requests
+Flask
+pandas==0.23.4
+numpy==1.16.2
+>>>>>>> c830a34621bf7bdb1ccdf12c2b4cbe0fdb3bab34
