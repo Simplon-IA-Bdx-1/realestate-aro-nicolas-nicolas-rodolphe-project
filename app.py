@@ -26,12 +26,12 @@ def get_predict():
 def predict():
 
     df = joblib.load("./model/dataBrick_for_v3.joblib")
-    k4 = [request.form['ville']]
+    ville = [request.form['ville']]
 
-    k4 = str(k4[0].upper())
-    print(f"--------------------{k4}-------------")
+    ville = str(ville[0].upper())
+    print(f"--------------------{ville}-------------")
 
-    sclol = df[df['ville'].isin([f"{k4}"])]
+    sclol = df[df['ville'].isin([f"{ville}"])]
     if len(sclol) < 4 :
         niv_confidence = "Faible, l'IA connait peut cette ville"
     elif len(sclol) >3 and len(sclol) <10 : 
@@ -39,17 +39,17 @@ def predict():
     elif len(sclol) >=10 : 
         niv_confidence = "Forte, l'IA connait bien cette ville"
     if len(sclol) != 0 :
-        k5 = statistics.mean(sclol["p_m2"])
+        pm_2 = statistics.mean(sclol["p_m2"])
     else :
         niv_confidence = "Faible, l'IA connait pas cette ville"
-        k5 = statistics.mean(df["p_m2"])
+        pm_2 = statistics.mean(df["p_m2"])
 
     input_data = {
         "type_de_bien":[request.form['type_de_bien']],
         "nb_de_pieces":[request.form['nb_de_pieces']],
         "surface":[request.form['surface']],
-        "ville":k4,
-        "p_m2":k5,
+        "ville":ville,
+        "p_m2":pm_2,
         }
 
     input_data = pd.DataFrame(input_data)
