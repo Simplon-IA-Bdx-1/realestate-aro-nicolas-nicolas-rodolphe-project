@@ -4,7 +4,7 @@ Cette branche regroupe l'industrialisation du code.
 
 le script indusPipline.py contient toute la chaine de production mise sous conditions.
 
-Ce script est presque indépendant d'Azure, si jamais on utilise plus azure alors il suffira de remplacer le chemin d'enregistrement du modéle vers le nouvel espace de stockage, tout le code est une Pipeline python et non Azure.
+Ce script est presque indépendant d'Azure, si jamais on utilise plus azure alors il suffira de remplacer le chemin d'enregistrement du modéle vers le nouvel espace de stockage, tout le reste du code est une Pipeline python.
 
 Etape : 
     
@@ -14,7 +14,8 @@ Etape :
     -si il y'a du nouveau --> Entrainement du modèle
     -Comparaison des metrcis avec celle du modèle en production
     -Enregistrement des données metrics sur bdd BDD
-    -Si meilleur métrics alors on dump le modèle et on l'inscrit sur Azure (le modéle est alors versionné), et deploiement du modèle sur Azure ou lien vers API Flask ?
+    -Si meilleur métrics alors on dump le modèle et on l'inscrit sur Azure (le modéle est alors versionné), 
+    et deploiement du modèle sur Azure ou lien vers API Flask ?
 
 Requirements :
     
@@ -31,7 +32,11 @@ Requirements :
         AZsubscription_id='xxxxx', (Azure id)
         AZresource_group='xxxxxx' (Azure group)
 
-    - librairie Python :
+    - librairie Python : 
+
+    elles sont équivalent à celle de l'env crée pour l'app Flask
+    mais il manque celle de la base de données et du scraping.
+
         -  Python==3.7.0
         -  xgboost==0.90
         -  scikit-learn==0.22.1
@@ -43,4 +48,6 @@ Requirements :
         -  numpy==1.16.2
 
 Le Notebook 01-Modelisation est le script qui a permis de créer le modèle et celui surlequel nous pouvons l'améliorer
+
+Attention l'opération de scraping peut être longue
 
