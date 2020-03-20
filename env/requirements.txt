@@ -3,4 +3,6 @@ xgboost==0.90
 pyinquirer==1.0.3
 joblib==0.14.1
 numpy==1.18.1
+requests
+Flask
 pandas
