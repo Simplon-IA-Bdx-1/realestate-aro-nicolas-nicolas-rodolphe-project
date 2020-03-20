@@ -20,9 +20,16 @@ Create a conda env with this command: `conda env create -f ./env/environment.yml
 
 #### Virtual env
 
-- Create an [environment](https://virtualenv.pypa.io/en/stable/) at the root of the repo: `python3 venv venv/`
-- Acivate it `source venv/bin/activate`
-- You can now install the dependencies with the `pip install -r ./env/requirements.txt` command.
+For Linux :
+  - Create an [environment](https://virtualenv.pypa.io/en/stable/) at the root of the repo: `python3 venv venv/`
+  - Acivate it `source venv/bin/activate`
+  - You can now install the dependencies with the `pip install -r ./env/requirements.txt` command.
+
+For Windows :
+  - Create an environement at the root of the repo : `python3 -m venv envImmo`
+  - Activate it move to `envImmo\Scripts` then `activate`
+  - Back to the root of repo.
+  - You can now install the dependencies with the `pip install -r ./env/requirements.txt` command.
 
 ### The app
 
