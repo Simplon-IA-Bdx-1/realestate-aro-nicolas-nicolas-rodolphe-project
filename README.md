@@ -26,7 +26,7 @@ For Linux :
   - You can now install the dependencies with the `pip install -r ./env/requirements.txt` command.
 
 For Windows :
-  - Create an environement at the root of the repo : `python3 -m venv envImmo`
+  - Create an environement at the root of the repo : `python -m venv envImmo`
   - Activate it move to `envImmo\Scripts` then `activate`
   - Back to the root of repo.
   - You can now install the dependencies with the `pip install -r ./env/requirements.txt` command.
@@ -34,3 +34,7 @@ For Windows :
 ### The app
 
 You're now ready to launch the application via the following command line `python app.py` and fire your first prediction.
+
+### Expiriments
+
+See Branch develop/Labo for see details of model's and Pipeline
