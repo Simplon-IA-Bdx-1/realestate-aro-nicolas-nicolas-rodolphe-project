@@ -30,6 +30,7 @@ import statistics
 
 import xgboost
 
+
 class Sqldd():
     """Class return connection & cursor for bdd,you need to close them, for import log's see readme"""
 
