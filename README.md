@@ -22,4 +22,10 @@ You can now run your favourite browser at [localhost](127.0.0.1:8080) `127.0.0.1
 
 ### Experiments
 
-See Branch develop/Labo for see details of model's and Pipeline
+See Branch develop/Labo for see details of model's and full Pipeline
+
+### Model Performance :
+  for v2 absolute value:  - Train_RMSE : 29 110 euro
+                          - Train_MAE : 6774 euro
+                          - Val_RMSE : 12 025 euro
+                          - Val_MAE : 6968 euro -- 1.73 %
