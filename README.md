@@ -18,6 +18,6 @@ Clone this repo and access it from the command line: `git clone https://github.c
 Go in the app folder and just fire `docker-compose up --build` and wait for the magic!  
 You can now run your favourite browser at [localhost](127.0.0.1:8080) `127.0.0.1:8080`
 
-### Expiriments
+### Experiments
 
 See Branch develop/Labo for see details of model's and Pipeline
