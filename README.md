@@ -13,7 +13,7 @@ For now, we only focusing to the Gironde area.
 
 Clone this repo and access it from the command line: `git clone https://github.com/Simplon-IA-Bdx-1/realestate-aro-nicolas-nicolas-rodolphe-project.git`.
 
-Having [Docker](https://docs.docker.com/get-docker/) installe don your machine
+Having [Docker](https://docs.docker.com/get-docker/) installed on your machine
 
 ### Launch
 
