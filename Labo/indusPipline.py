@@ -13,6 +13,12 @@ from joblib import dump
 from random import randrange
 from datetime import date
 
+from azureml.core import Workspace
+from azureml.core.model import Model
+from azureml.core.conda_dependencies import CondaDependencies
+from azureml.core.model import InferenceConfig
+from azureml.core.webservice import AciWebservice
+
 from sklearn.preprocessing import OneHotEncoder, PolynomialFeatures, StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 
@@ -28,6 +34,7 @@ class Sqldd():
     """Class return connection & cursor for bdd,you need to close them, for import log's see readme"""
 
     def __init__(self) :
+        ### loading log's see readme
         self.log_user = SL.sqlLogUser
         self.log_pass = SL.sqlLogPass
         self.log_host = SL.sqlLogHost
@@ -71,6 +78,7 @@ class Scraper:
         return r
         
     def get_all_sales_csv(self):
+        """ scraping url return list """
         url = f'{self.base_url}/achat-immobilier-gironde/12/'
 
         doc = requests.get('https://www.fnaim-gironde.com/achat-immobilier-gironde/12/1')
@@ -96,7 +104,7 @@ class Scraper:
         return cleanUrl            
                                            
     def routeScrap(self,cnx,cursor,linkList):
-        """ scraping data to BDD """
+        """ scraping data to BDD return number of new row on bdd """
 
         print("scraping des données sur ",len(linkList)," liens")
         data_scraped = 0
@@ -175,7 +183,7 @@ class CleanData():
         #### reset index for loop on them with no bug ####
         df.reset_index(inplace = True)
 
-        #### Set data ready for split ####
+        #### drop columns unused by model ####
         df = df.drop(['id','année','url'], axis=1)
         df['ville'] = df['ville'].str.strip() #Corect first character == " ".
 
@@ -245,170 +253,236 @@ class PipelineModel():
 
         return x_train, x_val, y_train, y_val, model
 
-def goToazure():
+class EvaluationModel():
+    """ pass your split's, train model, return metrics"""
+    def __init__(self,x_train, x_val, y_train, y_val, model): 
+        self.x_train = x_train 
+        self.x_val = x_val
+        self.y_train = y_train
+        self.y_val = y_val
+        self.model = model
+
+    def goEvaluate(self):
+        self.model.fit(self.x_train, self.y_train)
+
+        y_valid_pred = model.predict(self.x_train)
+        xgb_pred_ref = np.exp(y_valid_pred)
+
+        y_val_rescale = self.y_train.reshape(self.y_train.shape[0])
+        y_val_rescale = np.exp(y_val_rescale)
+
+        Train_RMSE = np.sqrt(MSE(xgb_pred_ref, y_val_rescale))
+        Train_score = MAE(xgb_pred_ref, y_val_rescale)
+
+        y_valid_pred = model.predict(self.x_val)
+        xgb_pred_ref = np.exp(y_valid_pred)
+
+        y_val_rescale = self.y_val.reshape(self.y_val.shape[0])
+        y_val_rescale = np.exp(y_val_rescale)
+
+        Val_RMSE = np.sqrt(MSE(xgb_pred_ref, y_val_rescale))
+        Val_score = MAE(xgb_pred_ref, y_val_rescale)
+
+        return Train_RMSE, Train_score, Val_RMSE, Val_score
+
+class DecisionMaker():
+    """ Pass metric's from EvaluationModel(), function will compare them with the model on prod,
+     if better create new model, deploy on azure, send log's on bdd"""
+
+    def __init__(self, Train_RMSE, Train_score, Val_RMSE, Val_score):
+        self.Train_RMSE = Train_RMSE
+        self.Train_score = Train_score
+        self.Val_RMSE = Val_RMSE
+        self.Val_score = Val_score
+
+    def rapSend(self):
+        #### reaplace with request to bdd -- load metric from model in Prod ####
+        max_version = cursor.execute("SELECT MAX(version) version FROM `orR9HUwT41`.`Suivis_metrics`")
+        max_version = cursor.fetchone()
+        old_train_rmse = cursor.execute(f"SELECT `Train_RMSE` FROM `orR9HUwT41`.`Suivis_metrics` WHERE `version`={max_version[0]}")
+        old_train_rmse = cursor.fetchone()
+        old_train_score = cursor.execute(f"SELECT `Train_MAE` FROM `orR9HUwT41`.`Suivis_metrics` WHERE `version`={max_version[0]}")
+        old_train_score = cursor.fetchone()
+        old_val_rmse = cursor.execute(f"SELECT `Val_RMSE` FROM `orR9HUwT41`.`Suivis_metrics` WHERE `version`={max_version[0]}")
+        old_val_rmse = cursor.fetchone()
+        old_val_score = cursor.execute(f"SELECT `Val_MAE` FROM `orR9HUwT41`.`Suivis_metrics` WHERE `version`={max_version[0]}")
+        old_val_score = cursor.fetchone()
+
+        ### Check if metric are better then the model metric in prod, if True we will register model to Azure storage, then deploy it ####
+
+        display = print("new metrics = Train_RMSE : ",round(self.Train_RMSE,4),"Train_MAE : ",round(self.Train_score,4),"Val_RMSE :", round(self.Val_RMSE,4),"Val_MAE : ",round(self.Val_score,4))
+        
+        if self.Train_RMSE < old_train_rmse and self.Train_score < old_train_score :
+            if self.Val_RMSE < old_val_rmse and self.Val_score < old_val_score :
+                print("!!! Innit register model !!!")
+                dump(model,"model_xgb_v4.joblib")
+                deploy = GoToAzure('FastImmoStud')
+                ws = deploy.getWorkspace()
+                deploy.registerModel(ws)
+                version = deploy.createWebservices(ws)
+                is_push_onProd = 1
+                print("!!! Better Model Created !!!")
+                display
+            else:
+                is_push_onProd=0
+                version = 0
+                print("Train metrics are better, but not Val metrics")
+                display
+        else :
+            is_push_onProd = 0
+            version = 0
+            print("Train metrics are not better")
+            if self.Train_RMSE < old_val_rmse and self.Train_score < old_val_score :
+                print(" but Val metrics are better")
+                display
+            else:
+                print("Val metrics are not better")
+                display
+
+        #### send métric to bdd ####
+        vals = self.Train_RMSE,self.Train_score,self.Val_RMSE,self.Val_score,is_push_onProd,version
+        cursor.execute(f"INSERT INTO `orR9HUwT41`.`Suivis_metrics` (`Train_RMSE`, `Train_MAE`, `Val_RMSE`, `Val_MAE`, `is_push_onProd`,`version`) VALUES {vals}")
+        print("log send to bdd")
+        cnx.commit()
+
+class GoToAzure():
     """ Only load modules if Azure is call, store model & deploy endpoint, function returns number of version model uploaded"""
-    
-    print("pip pour Azure")
-    from azureml.core import Workspace
-    from azureml.core.model import Model
-    from azureml.core.conda_dependencies import CondaDependencies
-    from azureml.core.model import InferenceConfig
-    from azureml.core.webservice import AciWebservice
 
-    ws = Workspace.get(name='FastImmoStud',
-                subscription_id= SL.AZsubscription_id, ## see readme for log's
-                resource_group=SL.AZresource_group)
+    def __init__(self,workspace_name):
+        print("pip Azure init")
+        self.workspace_name = workspace_name
 
-    fastv3 = Model.register(workspace=ws,
-                    model_name='fastv3',
-                    model_path='model_xgb_v4.joblib', # local path
-                    description='xgboost reg')
+    def getWorkspace(self):
+        ws = Workspace.get(name=f'{ self.workspace_name}',
+            subscription_id= SL.AZsubscription_id, ## see readme for log's
+            resource_group=SL.AZresource_group)
+        return ws
 
-    # Add the dependencies for your model
-    myenv = CondaDependencies()
-    myenv.add_conda_package("xgboost")
-    myenv.add_pip_package("azureml-defaults")
-    myenv.add_pip_package("scikit-learn==0.22.1")
-    myenv.add_pip_package("joblib==0.14.1")
+    def registerModel(self,ws):
+        Model.register(workspace=ws,
+                        model_name='fastv3',
+                        model_path='model_xgb_v4.joblib', # local path
+                        description='xgboost reg')
 
+    def createEnvFiles(self):
+        # Add the dependencies for your model and create files, this is not call on Pipeline
+        myenv = CondaDependencies()
+        myenv.add_conda_package("xgboost")
+        myenv.add_pip_package("azureml-defaults")
+        myenv.add_pip_package("scikit-learn==0.22.1")
+        myenv.add_pip_package("joblib==0.14.1")
 
-    # Save the environment config as a .yml file
-    env_file = 'service_files/env.yml'
-    with open(env_file,"w") as f:
-        f.write(myenv.serialize_to_string())
-    print("Saved dependency info in", env_file)
+        # Save the environment config as a .yml file
+        env_file = 'service_files/env.yml'
+        with open(env_file,"w") as f:
+            f.write(myenv.serialize_to_string())
+        print("Saved dependency info in", env_file)
 
+    def createWebservices(self,ws):
+        _inference_config = InferenceConfig(runtime= "python",
+                                                        source_directory = 'service_files',
+                                                        entry_script="score.py",
+                                                        conda_file="env.yml")
 
-    _inference_config = InferenceConfig(runtime= "python",
-                                                    source_directory = 'service_files',
-                                                    entry_script="score.py",
-                                                    conda_file="env.yml")
+        aciconfig = AciWebservice.deploy_configuration(cpu_cores=1, 
+                                                        memory_gb=1)
 
-    aciconfig = AciWebservice.deploy_configuration(cpu_cores=1, 
-                                                    memory_gb=1)
+        model = ws.models['fastv3']
 
-    model = ws.models['fastv3']
+        ### we can't deploy model with same name (crash), so we generate a random number, but we can register a model with same name, he is vers by Azure.
+        is_versionage = False
+        while is_versionage != True:
+            try:
+                vers = randrange(10000000) ## generate random int for unique id deployment
+                vers = str(vers)
+                service = Model.deploy(workspace=ws,
+                                name = f'fast-service-{vers}',
+                                models = [model],
+                                inference_config = _inference_config,
+                                deployment_config = aciconfig)
+                is_versionage = True ## if deploy is pass, go out of loops & wait to azure finish job
+            except :
+                is_versionage = False ## if deploy crash because of name id, continue to loop with a new number
 
-    ### we can't deploy model with same name (crash), so we generate a random number, but we can register a model with same name, he is vers by Azure.
-    is_versionage = False
-    while is_versionage != True:
-        try:
-            vers = randrange(10000000) ## generate random int for unique id deployment
-            vers = str(vers)
-            service = Model.deploy(workspace=ws,
-                            name = f'fast-service-{vers}',
-                            models = [model],
-                            inference_config = _inference_config,
-                            deployment_config = aciconfig)
-            is_versionage = True ## if deploy is pass, go out of loops & wait to azure finish job
-        except :
-            is_versionage = False
+        service.wait_for_deployment(show_output = True)
+        endpoint = service.scoring_uri
+        print(endpoint)
 
-    service.wait_for_deployment(show_output = True)
-    endpoint = service.scoring_uri
-    print(endpoint)
+        ## loop on model list & keep the last version just created
+        for model in Model.list(ws):
+            num_mod_ver = model.version 
+        return num_mod_ver
 
-    ## loop on model list & keep the last version just created
-    for model in Model.list(ws):
-        num_mod_ver = model.version 
-    return num_mod_ver
+    #def voidUpdateservices(self,ws):
+        # Use version 3 of the environment.
+        # deploy_env = Environment.get(workspace=ws,name="myenv",version="3")
+
+        # inference_config = InferenceConfig(entry_script="score.py", environment=deploy_env)
+
+        # service_name = 'myservice'
+        # # Retrieve existing service.
+        # service = Webservice(name=service_name, workspace=ws)
+
+        # # Update to new model(s).
+        # service.update(models=[new_model], inference_config=inference_config)
+        # print(service.state)
+        # print(service.get_logs())        
 
 
 ############################################ start routine #################################
 
-# Call Bdd connection class 
-tip = Sqldd()
-cnx, cursor = tip.get_bdd_co()
+if __name__ == "__main__":
 
-# call class Scraper url
-scraper = Scraper()
-print("Start Scrap url")
-outputLink = scraper.get_all_sales_csv()
+    # Call Bdd connection class 
+    tip = Sqldd()
+    cnx, cursor = tip.get_bdd_co()
 
-# call class Scraper data
-should = scraper.routeScrap(cnx,cursor,outputLink)
+    affichage = """
+Choisissez une option:
 
-if should == 0:
-    print(" -------------------  Nothing to scrap !! Exit program ---------------------- ")
-    exit()
+                \t1: Launch Full Pipeline
 
+\t2: Launch Scraping only           \t3: Launch training only
 
-# Call clean Data Class
-ccl = CleanData(cursor)
-x_full,y_full = ccl.cleanJob()
+                    """
+    print(affichage)
 
-# call class Pipeline model
-fft = PipelineModel(x_full, y_full)
-x_train, x_val, y_train, y_val, model = fft.goPip()
+    option_choisie = int(input("Choose option (1,2 or 3) : "))
 
+    ## if user set 1 (or other), both if for option_choisie will ve True and full pipeline will run
+    if option_choisie != 3 :
+        # call class Scraper url
+        scraper = Scraper()
+        print("Start Scrap url")
+        outputLink = scraper.get_all_sales_csv()
 
-#### trainning & evaluate model ####
+        # call class Scraper data
+        should = scraper.routeScrap(cnx,cursor,outputLink)
 
-model.fit(x_train,y_train)
+        if should == 0:
+            print(" -------------------  Nothing to scrap !! Exit program ---------------------- ")
+            exit()
 
-y_valid_pred = model.predict(x_train)
-xgb_pred_ref = np.exp(y_valid_pred)
+    if option_choisie != 2 :
+        # Call clean Data Class
+        ccl = CleanData(cursor)
+        x_full,y_full = ccl.cleanJob()
 
-y_val_rescale = y_train.reshape(y_train.shape[0])
-y_val_rescale = np.exp(y_val_rescale)
+        # call class Pipeline model
+        fft = PipelineModel(x_full, y_full)
+        x_train, x_val, y_train, y_val, model = fft.goPip()
 
-Train_RMSE = np.sqrt(MSE(xgb_pred_ref, y_val_rescale))
-Train_score = MAE(xgb_pred_ref, y_val_rescale)
+        #### call trainning & evaluate model ####
+        ggt = EvaluationModel(x_train, x_val, y_train, y_val, model)
+        Train_RMSE, Train_score, Val_RMSE, Val_score = ggt.goEvaluate()
 
-y_valid_pred = model.predict(x_val)
-xgb_pred_ref = np.exp(y_valid_pred)
+        ### call 
+        hht = DecisionMaker(Train_RMSE, Train_score, Val_RMSE, Val_score)
+        hht.rapSend()
 
-y_val_rescale = y_val.reshape(y_val.shape[0])
-y_val_rescale = np.exp(y_val_rescale)
+    cursor.close()
+    cnx.close()
+    print("!!Finish!!")
 
-Val_RMSE = np.sqrt(MSE(xgb_pred_ref, y_val_rescale))
-Val_score = MAE(xgb_pred_ref, y_val_rescale)
-
-
-#### reaplace with request to bdd -- load metric from model in Prod ####
-max_version = cursor.execute("SELECT MAX(version) version FROM `orR9HUwT41`.`Suivis_metrics`")
-max_version = cursor.fetchone()
-old_train_rmse = cursor.execute(f"SELECT `Train_RMSE` FROM `orR9HUwT41`.`Suivis_metrics` WHERE `version`={max_version[0]}")
-old_train_rmse = cursor.fetchone()
-old_train_score = cursor.execute(f"SELECT `Train_MAE` FROM `orR9HUwT41`.`Suivis_metrics` WHERE `version`={max_version[0]}")
-old_train_score = cursor.fetchone()
-old_val_rmse = cursor.execute(f"SELECT `Val_RMSE` FROM `orR9HUwT41`.`Suivis_metrics` WHERE `version`={max_version[0]}")
-old_val_rmse = cursor.fetchone()
-old_val_score = cursor.execute(f"SELECT `Val_MAE` FROM `orR9HUwT41`.`Suivis_metrics` WHERE `version`={max_version[0]}")
-old_val_score = cursor.fetchone()
-
-### Check if metric are better then the model metric in prod, if True we will register model to Azure storage, then deploy it ####
-
-if Train_RMSE < old_train_rmse and Train_score < old_train_score :
-    if Val_RMSE < old_val_rmse and Val_score < old_val_score :
-        print("!!! Innit register model !!!")
-        dump(model,"model_xgb_v4.joblib")
-        num_mod_ver = goToazure()
-        is_push_onProd = 1
-        version = num_mod_ver
-        print("!!! Better Model Created !!!")
-        print("new metrics = Train_RMSE : ",round(Train_RMSE,4),"Train_MAE : ",round(Train_score,4),"Val_RMSE :", round(Val_RMSE,4),"Val_MAE : ",round(Val_score,4))
-    else:
-        is_push_onProd=0
-        version = 0
-        print("Train metrics are better, but not Val metrics")
-else :
-    is_push_onProd = 0
-    version = 0
-    print("Train metrics are not better")
-    if Train_RMSE < old_val_rmse and Train_score < old_val_score :
-        print(" but Val metrics are better")
-    else:
-        print("Val metrics are not better")
-
-
-####  need send métric to bdd ####
-vals = Train_RMSE,Train_score,Val_RMSE,Val_score,is_push_onProd,version
-cursor.execute(f"INSERT INTO `orR9HUwT41`.`Suivis_metrics` (`Train_RMSE`, `Train_MAE`, `Val_RMSE`, `Val_MAE`, `is_push_onProd`,`version`) VALUES {vals}")
-cnx.commit()
-
-cursor.close
-cnx.close()
-
-###################################################################### It's Finish :) :) ############################################################################
+######################################################################  Finish ############################################################################
 #####################################################################################################################################################################

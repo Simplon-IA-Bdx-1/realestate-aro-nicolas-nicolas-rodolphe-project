@@ -4,7 +4,10 @@ Cette branche regroupe l'industrialisation du code.
 
 le script indusPipline.py contient toute la chaine de production mise sous conditions.
 
-Ce script est presque indépendant d'Azure, si jamais on utilise plus azure alors il suffira de remplacer le chemin d'enregistrement du modéle vers le nouvel espace de stockage, tout le reste du code est une Pipeline python.
+cmd = python indusPipline.py
+    choisir option 1 pour toute la pipeline
+    option 2 : scraping seulement
+    option 3 entrainement du modèle
 
 Etape : 
     
@@ -19,7 +22,7 @@ Etape :
 
 Requirements :
     
-    - créer un script sec.py à la racine du dossier sous la forme suivante
+    - créer un script sec.py à la racine du dossier :
 
     class secureLog():
 
@@ -34,9 +37,6 @@ Requirements :
 
     - librairie Python : 
 
-    elles sont équivalent à celle de l'env crée pour l'app Flask
-    mais il manque celle de la base de données et du scraping.
-
         -  Python==3.7.0
         -  xgboost==0.90
         -  scikit-learn==0.22.1
@@ -50,4 +50,6 @@ Requirements :
 Le Notebook 01-Modelisation est le script qui a permis de créer le modèle et celui surlequel nous pouvons l'améliorer
 
 Attention l'opération de scraping peut être longue
+
+Ce script est presque indépendant d'Azure, si jamais on utilise plus azure alors il suffira de remplacer le chemin d'enregistrement du modéle vers le nouvel espace de stockage, tout le reste du code est une Pipeline python.
 
