@@ -9,6 +9,8 @@ cmd = python indusPipline.py
     option 2 : scraping seulement
     option 3 entrainement du modèle
 
+Autre option, depuis le dossier Labo, exécuter docker-compose up et toute la Pipeline est éxécutée.    
+
 Etape : 
     
     -Scrap des URL depuis la source de Data

@@ -30,7 +30,6 @@ import statistics
 
 import xgboost
 
-
 class Sqldd():
     """Class return connection & cursor for bdd,you need to close them, for import log's see readme"""
 
@@ -414,6 +413,7 @@ class GoToAzure():
             num_mod_ver = model.version 
         return num_mod_ver
 
+    ## Work in Progress
     #def voidUpdateservices(self,ws):
         # Use version 3 of the environment.
         # deploy_env = Environment.get(workspace=ws,name="myenv",version="3")
@@ -447,8 +447,10 @@ Choisissez une option:
 
                     """
     print(affichage)
+    
 
     option_choisie = int(input("Choose option (1,2 or 3) : "))
+    option_choisie = 3
 
     ## if user set 1 (or other), both if for option_choisie will ve True and full pipeline will run
     if option_choisie != 3 :
@@ -473,13 +475,51 @@ Choisissez une option:
         fft = PipelineModel(x_full, y_full)
         x_train, x_val, y_train, y_val, model = fft.goPip()
 
-        #### call trainning & evaluate model ####
+        #### call class trainning & evaluate model ####
         ggt = EvaluationModel(x_train, x_val, y_train, y_val, model)
         Train_RMSE, Train_score, Val_RMSE, Val_score = ggt.goEvaluate()
 
-        ### call 
+        ### call class DecisionMaker
         hht = DecisionMaker(Train_RMSE, Train_score, Val_RMSE, Val_score)
         hht.rapSend()
+
+    cursor.close()
+    cnx.close()
+    print("!!Finish!!")
+
+else:
+    #### Else is call when script is start with docker-compose up that Run the Full Pipeline
+    print("Full Pipeline Launch")
+    tip = Sqldd()
+    cnx, cursor = tip.get_bdd_co()
+    
+    # call class Scraper url
+    scraper = Scraper()
+    print("Start Scrap url")
+    outputLink = scraper.get_all_sales_csv()
+
+    # call class Scraper data
+    should = scraper.routeScrap(cnx,cursor,outputLink)
+
+    if should == 0:
+        print(" -------------------  Nothing to scrap !! Exit program ---------------------- ")
+        exit()
+
+    # Call clean Data Class
+    ccl = CleanData(cursor)
+    x_full,y_full = ccl.cleanJob()
+
+    # call class Pipeline model
+    fft = PipelineModel(x_full, y_full)
+    x_train, x_val, y_train, y_val, model = fft.goPip()
+
+    #### call class trainning & evaluate model ####
+    ggt = EvaluationModel(x_train, x_val, y_train, y_val, model)
+    Train_RMSE, Train_score, Val_RMSE, Val_score = ggt.goEvaluate()
+
+    ### call class DecisionMaker
+    hht = DecisionMaker(Train_RMSE, Train_score, Val_RMSE, Val_score)
+    hht.rapSend()
 
     cursor.close()
     cnx.close()
