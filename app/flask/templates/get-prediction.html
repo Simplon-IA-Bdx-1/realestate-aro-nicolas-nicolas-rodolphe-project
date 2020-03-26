@@ -11,13 +11,13 @@
         <h1>Enter your data for prediction</h1>
         <form action="/predict" method="post">
             <label for="type_de_bien">Type de bien:</label>
-            <input type="text" id="type_de_bien" name="type_de_bien"/>
+            <input type="text" id="type_de_bien" name="type_de_bien" required=true/>
             <label for="nb_de_pieces">nb_de_pieces:</label>
-            <input type="number" id="nb_de_pieces" name="nb_de_pieces"/>
+            <input type="number" id="nb_de_pieces" name="nb_de_pieces" required=true/>
             <label for="surface">surface:</label>
-            <input type="number" id="surface" name="surface"/>
+            <input type="number" id="surface" name="surface" required=true/>
             <label for="ville">ville:</label>
-            <input type="text" id="ville" name="ville"/>
+            <input type="text" id="ville" name="ville" required=true/>
             <button>Submit</button>
         </form>
     </div>
